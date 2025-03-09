@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Costco Pizza Cost Splitter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🍕 Costco Pizza Cost Splitter</h1>
+    </header>
+
+    <main>
+        <section class="form-section">
+            <h2>Add Your Order</h2>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="name">Your Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cheese_slices">Cheese Slices:</label>
+                    <input type="number" id="cheese_slices" name="cheese_slices" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="pepperoni_slices">Pepperoni Slices:</label>
+                    <input type="number" id="pepperoni_slices" name="pepperoni_slices" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="paid">Have you paid?</label>
+                    <input type="checkbox" id="paid" name="paid">
+                </div>
+
+                <button type="submit" id="submitOrder">Add My Order</button>
+            </form>
+        </section>
+
+        <section class="orders-section">
+            <h2>Current Orders</h2>
+            <div class="table-container">
+                <table id="ordersTable">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Cheese Slices</th>
+                        <th>Pepperoni Slices</th>
+                        <th>Total Slices</th>
+                        <th>Cost</th>
+                        <th>Paid</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                    <!-- Orders will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="stats-section">
+            <h2>Order Summary</h2>
+            <div id="orderStats" class="stats-container">
+                <div class="stat-box">
+                    <h3>Cheese Pizza</h3>
+                    <p>Total Slices: <span id="total_cheese_slices">0</span></p>
+                    <p>Pizzas Needed: <span id="cheese_pizzas_needed">0</span></p>
+                    <p>Leftover Slices: <span id="leftover_cheese_slices">0</span></p>
+                </div>
+
+                <div class="stat-box">
+                    <h3>Pepperoni Pizza</h3>
+                    <p>Total Slices: <span id="total_pepperoni_slices">0</span></p>
+                    <p>Pizzas Needed: <span id="pepperoni_pizzas_needed">0</span></p>
+                    <p>Leftover Slices: <span id="leftover_pepperoni_slices">0</span></p>
+                </div>
+
+                <div class="stat-box">
+                    <h3>Half Pizzas</h3>
+                    <p>Half Pizzas: <span id="half_pizzas">0</span></p>
+                    <p>Total Pizzas: <span id="total_pizzas">0</span></p>
+                    <p>Total Cost: $<span id="total_cost">0.00</span></p>
+                </div>
+
+                <div class="stat-box highlight">
+                    <h3>Cost Per Slice</h3>
+                    <p class="large-text">$<span id="cost_per_slice">0.00</span></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Costco Pizza Cost Splitter App &copy; 2025 <a href="https://micahdittmar.com/">Micah Dittmar</a></p>
+    </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
