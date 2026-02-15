@@ -40,6 +40,7 @@ function addOrder(e) {
         // Update existing order
         const orderIndex = orders.findIndex(order => order.id === editingOrderId);
         if (orderIndex !== -1) {
+            const wasAlreadyPaid = orders[orderIndex].paid;
             orders[orderIndex] = {
                 id: editingOrderId,
                 name: name,
@@ -47,6 +48,11 @@ function addOrder(e) {
                 pepperoni_slices: pepperoniSlices,
                 paid: paid
             };
+            // Check for first to pay (only if they weren't already paid)
+            if (paid && !wasAlreadyPaid && firstToPaidOrderId === null) {
+                firstToPaidOrderId = editingOrderId;
+                firstToPaidTitle = FIRST_TO_PAY_TITLES[Math.floor(Math.random() * FIRST_TO_PAY_TITLES.length)];
+            }
         }
         // Track this as the last modified order
         lastModifiedOrderId = editingOrderId;
@@ -69,6 +75,12 @@ function addOrder(e) {
         orders.push(order);
         // Track this as the last modified order
         lastModifiedOrderId = newOrderId;
+
+        // Check for first to pay
+        if (paid && firstToPaidOrderId === null) {
+            firstToPaidOrderId = newOrderId;
+            firstToPaidTitle = FIRST_TO_PAY_TITLES[Math.floor(Math.random() * FIRST_TO_PAY_TITLES.length)];
+        }
     }
 
     // Save to localStorage
@@ -86,6 +98,13 @@ function addOrder(e) {
 // Delete an order
 function deleteOrder(id) {
     orders = orders.filter(order => order.id !== id);
+    // If we deleted the first-to-pay order, reset the tracking
+    if (firstToPaidOrderId === id) {
+        firstToPaidOrderId = null;
+        firstToPaidTitle = null;
+        localStorage.removeItem('firstToPaidOrderId');
+        localStorage.removeItem('firstToPaidTitle');
+    }
     saveOrders();
     updateOrdersTable();
     updatePizzaCalculations();
@@ -157,29 +176,55 @@ const TIE_TITLES_4PLUS = [
     'Slice Syndicate'
 ];
 
-// Store assigned titles by order ID and tie count to keep them consistent
-let assignedTitles = {};
+// First to pay titles
+const FIRST_TO_PAY_TITLES = [
+    'Cash Boi',
+    'Cash Slinger',
+    'Quickdraw',
+    'Venmo Vindicator',
+    '$peedy $ender',
+    'Dolla Holla',
+    'Payment Prodigy'
+];
+
+// Store assigned titles - solo titles by order ID, shared titles by tie count
+let assignedSoloTitles = {};
+let assignedSharedTitle = { tieCount: 0, title: null };
+
+// Track first to pay
+let firstToPaidOrderId = null;
+let firstToPaidTitle = null;
 
 // Track the last order that was added/modified (for Pie Perfecter badge)
 let lastModifiedOrderId = null;
 
 // Get or assign a random title for an order based on tie count
 function getTitleForOrder(orderId, tieCount) {
-    const key = `${orderId}_${tieCount}`;
-    if (!assignedTitles[key]) {
-        let titleArray;
-        if (tieCount === 1) {
-            titleArray = PIZZA_TITLES;
-        } else if (tieCount === 2) {
-            titleArray = TIE_TITLES_2WAY;
-        } else if (tieCount === 3) {
-            titleArray = TIE_TITLES_3WAY;
-        } else {
-            titleArray = TIE_TITLES_4PLUS;
+    if (tieCount === 1) {
+        // Solo winner - each person gets their own unique title
+        if (!assignedSoloTitles[orderId]) {
+            assignedSoloTitles[orderId] = PIZZA_TITLES[Math.floor(Math.random() * PIZZA_TITLES.length)];
         }
-        assignedTitles[key] = titleArray[Math.floor(Math.random() * titleArray.length)];
+        return assignedSoloTitles[orderId];
+    } else {
+        // Tied - all tied people share the same title
+        // Regenerate if tie count changed
+        if (assignedSharedTitle.tieCount !== tieCount || !assignedSharedTitle.title) {
+            let titleArray;
+            if (tieCount === 2) {
+                titleArray = TIE_TITLES_2WAY;
+            } else if (tieCount === 3) {
+                titleArray = TIE_TITLES_3WAY;
+            } else {
+                titleArray = TIE_TITLES_4PLUS;
+            }
+            assignedSharedTitle = {
+                tieCount: tieCount,
+                title: titleArray[Math.floor(Math.random() * titleArray.length)]
+            };
+        }
+        return assignedSharedTitle.title;
     }
-    return assignedTitles[key];
 }
 
 // Update orders table
@@ -225,14 +270,21 @@ function updateOrdersTable() {
             row.classList.add('top-order-row');
         }
 
-        // Build badges
+        // Build badges with tooltips
         let badges = '';
         if (isTopOrder) {
-            badges += `<span class="pizza-champion-badge">${getTitleForOrder(order.id, tieCount)}</span>`;
+            const championTooltip = tieCount === 1
+                ? 'Awarded for ordering the most slices'
+                : `Awarded to ${tieCount} people tied for ordering the most slices`;
+            badges += `<span class="pizza-champion-badge" title="${championTooltip}">${getTitleForOrder(order.id, tieCount)}</span>`;
         }
         // Only the person who completed the perfect order gets the Pie Perfecter badge
         if (isPerfectOrder && order.id === lastModifiedOrderId) {
-            badges += `<span class="perfect-pie-badge">Pie Perfecter ✓</span>`;
+            badges += `<span class="perfect-pie-badge" title="Awarded for completing a perfect order with no wasted slices">Pie Perfecter ✓</span>`;
+        }
+        // First to pay badge
+        if (order.id === firstToPaidOrderId && order.paid) {
+            badges += `<span class="first-to-pay-badge" title="Awarded for being the first to pay">${firstToPaidTitle}</span>`;
         }
 
         // Create name cell with optional badges
@@ -601,6 +653,11 @@ function calculateCostPerSlice() {
 // Save orders to localStorage
 function saveOrders() {
     localStorage.setItem('pizzaOrders', JSON.stringify(orders));
+    // Save first to pay info
+    if (firstToPaidOrderId !== null) {
+        localStorage.setItem('firstToPaidOrderId', firstToPaidOrderId);
+        localStorage.setItem('firstToPaidTitle', firstToPaidTitle);
+    }
 }
 
 // Load orders from localStorage
@@ -610,6 +667,21 @@ function loadOrders() {
         orders = JSON.parse(savedOrders);
         updateOrdersTable();
         updatePizzaCalculations();
+    }
+    // Load first to pay info
+    const savedFirstToPaidId = localStorage.getItem('firstToPaidOrderId');
+    const savedFirstToPaidTitle = localStorage.getItem('firstToPaidTitle');
+    if (savedFirstToPaidId && savedFirstToPaidTitle) {
+        firstToPaidOrderId = parseInt(savedFirstToPaidId);
+        firstToPaidTitle = savedFirstToPaidTitle;
+        // Verify the order still exists
+        const orderExists = orders.some(order => order.id === firstToPaidOrderId && order.paid);
+        if (!orderExists) {
+            firstToPaidOrderId = null;
+            firstToPaidTitle = null;
+            localStorage.removeItem('firstToPaidOrderId');
+            localStorage.removeItem('firstToPaidTitle');
+        }
     }
     updatePizzaVisualization();
 }
