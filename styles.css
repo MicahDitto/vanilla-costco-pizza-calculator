@@ -101,12 +101,113 @@ button:hover {
 
 .highlight {
     background-color: #ffecb3;
+    transition: background-color 0.5s ease;
+}
+
+/* Cost efficiency color spectrum */
+.cost-perfect {
+    background-color: #1b5e20 !important; /* Deep green - perfect, no waste */
+    color: white;
+}
+
+.cost-great {
+    background-color: #4caf50 !important; /* Green - great */
+    color: white;
+}
+
+.cost-good {
+    background-color: #8bc34a !important; /* Light green - good */
+    color: #333;
+}
+
+.cost-okay {
+    background-color: #ffeb3b !important; /* Yellow - okay */
+    color: #333;
+}
+
+.cost-poor {
+    background-color: #ff9800 !important; /* Orange - poor */
+    color: white;
+}
+
+.cost-bad {
+    background-color: #f44336 !important; /* Red - bad */
+    color: white;
+}
+
+/* Confetti styles */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    opacity: 0;
+}
+
+.confetti.burst {
+    animation: confetti-burst 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes confetti-burst {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(var(--tx), var(--ty)) rotate(180deg) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), calc(var(--ty) + 300px)) rotate(720deg) scale(0.5);
+    }
 }
 
 .large-text {
     font-size: 24px;
     font-weight: bold;
     margin-top: 10px;
+}
+
+.perfect-slogan {
+    display: none;
+    color: #2e7d32;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 8px;
+    animation: slogan-pop 0.5s ease-out;
+}
+
+.perfect-slogan.visible {
+    display: block;
+}
+
+.cost-perfect .perfect-slogan {
+    color: #a5d6a7; /* Lighter green for contrast on dark background */
+}
+
+@keyframes slogan-pop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* Table Styles */
@@ -146,6 +247,20 @@ tr:hover {
     color: red;
 }
 
+.edit-btn {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.edit-btn:hover {
+    background-color: #1976D2;
+}
+
 .delete-btn {
     background-color: #f44336;
     color: white;
@@ -157,6 +272,15 @@ tr:hover {
 
 .delete-btn:hover {
     background-color: #d32f2f;
+}
+
+#cancelEdit {
+    background-color: #757575;
+    margin-left: 10px;
+}
+
+#cancelEdit:hover {
+    background-color: #616161;
 }
 
 footer {

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Costco Pizza Cost Splitter</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍕</text></svg>">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -37,6 +38,7 @@
                 </div>
 
                 <button type="submit" id="submitOrder">Add My Order</button>
+                <button type="button" id="cancelEdit" style="display: none;" onclick="cancelEdit()">Cancel</button>
             </form>
         </section>
 
@@ -88,6 +90,7 @@
                 <div class="stat-box highlight">
                     <h3>Cost Per Slice</h3>
                     <p class="large-text">$<span id="cost_per_slice">0.00</span></p>
+                    <p id="perfect-slogan" class="perfect-slogan">Perfect Pie! ✓</p>
                 </div>
             </div>
         </section>

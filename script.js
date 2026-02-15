@@ -5,6 +5,9 @@ const COST_PER_PIZZA = 10.53;
 // Store orders in an array
 let orders = [];
 
+// Track editing state
+let editingOrderId = null;
+
 // DOM elements
 document.addEventListener('DOMContentLoaded', function() {
     // Get form and attach submit event
@@ -15,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadOrders();
 });
 
-// Add a new order
+// Add or update an order
 function addOrder(e) {
     e.preventDefault();
 
@@ -29,17 +32,35 @@ function addOrder(e) {
         return;
     }
 
-    // Create a new order object
-    const order = {
-        id: Date.now(), // Use timestamp as a unique ID
-        name: name,
-        cheese_slices: cheeseSlices,
-        pepperoni_slices: pepperoniSlices,
-        paid: paid
-    };
+    if (editingOrderId !== null) {
+        // Update existing order
+        const orderIndex = orders.findIndex(order => order.id === editingOrderId);
+        if (orderIndex !== -1) {
+            orders[orderIndex] = {
+                id: editingOrderId,
+                name: name,
+                cheese_slices: cheeseSlices,
+                pepperoni_slices: pepperoniSlices,
+                paid: paid
+            };
+        }
+        // Reset editing state
+        editingOrderId = null;
+        document.getElementById('submitOrder').textContent = 'Add My Order';
+        document.getElementById('cancelEdit').style.display = 'none';
+    } else {
+        // Create a new order object
+        const order = {
+            id: Date.now(), // Use timestamp as a unique ID
+            name: name,
+            cheese_slices: cheeseSlices,
+            pepperoni_slices: pepperoniSlices,
+            paid: paid
+        };
 
-    // Add order to array
-    orders.push(order);
+        // Add order to array
+        orders.push(order);
+    }
 
     // Save to localStorage
     saveOrders();
@@ -62,6 +83,34 @@ function deleteOrder(id) {
     updatePizzaVisualization();
 }
 
+// Edit an order
+function editOrder(id) {
+    const order = orders.find(order => order.id === id);
+    if (!order) return;
+
+    // Populate form with order data
+    document.getElementById('name').value = order.name;
+    document.getElementById('cheese_slices').value = order.cheese_slices;
+    document.getElementById('pepperoni_slices').value = order.pepperoni_slices;
+    document.getElementById('paid').checked = order.paid;
+
+    // Set editing state
+    editingOrderId = id;
+    document.getElementById('submitOrder').textContent = 'Update Order';
+    document.getElementById('cancelEdit').style.display = 'inline-block';
+
+    // Scroll to form
+    document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Cancel editing
+function cancelEdit() {
+    editingOrderId = null;
+    document.getElementById('submitOrder').textContent = 'Add My Order';
+    document.getElementById('cancelEdit').style.display = 'none';
+    document.getElementById('orderForm').reset();
+}
+
 // Update orders table
 function updateOrdersTable() {
     const tableBody = document.getElementById('ordersTableBody');
@@ -82,7 +131,10 @@ function updateOrdersTable() {
             <td>${totalSlices}</td>
             <td>$${orderCost}</td>
             <td class="paid-status ${order.paid ? 'paid' : 'not-paid'}">${order.paid ? 'Yes' : 'No'}</td>
-            <td><button class="delete-btn" onclick="deleteOrder(${order.id})">Delete</button></td>
+            <td>
+                <button class="edit-btn" onclick="editOrder(${order.id})">Edit</button>
+                <button class="delete-btn" onclick="deleteOrder(${order.id})">Delete</button>
+            </td>
         `;
 
         tableBody.appendChild(row);
@@ -157,6 +209,128 @@ function updatePizzaCalculations() {
     document.getElementById('total_cost').textContent = totalCost.toFixed(2);
 
     document.getElementById('cost_per_slice').textContent = costPerSlice.toFixed(2);
+
+    // Update cost efficiency color and check for perfect order
+    const totalLeftover = leftoverCheeseSlices + leftoverPepperoniSlices;
+    updateCostEfficiencyColor(costPerSlice, totalLeftover, totalSlices);
+}
+
+// Update the cost per slice box color based on efficiency
+function updateCostEfficiencyColor(costPerSlice, totalLeftover, totalSlices) {
+    const costBox = document.querySelector('.stat-box.highlight');
+    if (!costBox) return;
+
+    // Remove all cost classes
+    costBox.classList.remove('cost-perfect', 'cost-great', 'cost-good', 'cost-okay', 'cost-poor', 'cost-bad');
+
+    // If no slices ordered, keep default
+    if (totalSlices === 0) return;
+
+    // Optimal cost per slice is $10.53 / 12 = ~$0.88
+    const optimalCost = COST_PER_PIZZA / SLICES_PER_PIZZA;
+
+    // Get the slogan element
+    const slogan = document.getElementById('perfect-slogan');
+
+    // Hide slogan by default
+    slogan.classList.remove('visible');
+
+    // Perfect: no leftover slices (cost equals optimal)
+    if (totalLeftover === 0) {
+        costBox.classList.add('cost-perfect');
+        slogan.classList.add('visible');
+        triggerConfetti();
+    }
+    // Great: cost per slice < $0.95 (less than ~8% waste)
+    else if (costPerSlice < optimalCost * 1.08) {
+        costBox.classList.add('cost-great');
+    }
+    // Good: cost per slice < $1.10 (less than ~25% waste)
+    else if (costPerSlice < optimalCost * 1.25) {
+        costBox.classList.add('cost-good');
+    }
+    // Okay: cost per slice < $1.50 (less than ~70% waste)
+    else if (costPerSlice < optimalCost * 1.70) {
+        costBox.classList.add('cost-okay');
+    }
+    // Poor: cost per slice < $2.00
+    else if (costPerSlice < 2.00) {
+        costBox.classList.add('cost-poor');
+    }
+    // Bad: cost per slice >= $2.00
+    else {
+        costBox.classList.add('cost-bad');
+    }
+}
+
+// Trigger confetti celebration
+function triggerConfetti() {
+    // Remove any existing confetti container
+    const existingContainer = document.querySelector('.confetti-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+
+    // Create confetti container
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+
+    // Get the cost per slice element position for confetti origin
+    const costBox = document.querySelector('.stat-box.highlight');
+    const rect = costBox.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+
+    // Create confetti pieces
+    const colors = ['#ff5722', '#ffeb3b', '#4caf50', '#2196f3', '#9c27b0', '#ff9800', '#e91e63', '#00bcd4'];
+    const shapes = ['square', 'circle', 'triangle'];
+
+    for (let i = 0; i < 80; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti burst';
+
+        // Random properties
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        const size = Math.random() * 12 + 6;
+
+        // Random angle for burst direction (full 360 degrees)
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 200 + 100;
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity - 150; // Bias upward
+
+        const delay = Math.random() * 0.3;
+
+        let borderRadius = '0';
+        let clipPath = 'none';
+        if (shape === 'circle') {
+            borderRadius = '50%';
+        } else if (shape === 'triangle') {
+            clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+        }
+
+        confetti.style.cssText = `
+            left: ${originX}px;
+            top: ${originY}px;
+            width: ${size}px;
+            height: ${size}px;
+            background-color: ${color};
+            border-radius: ${borderRadius};
+            clip-path: ${clipPath};
+            --tx: ${tx}px;
+            --ty: ${ty}px;
+            animation-delay: ${delay}s;
+        `;
+
+        container.appendChild(confetti);
+    }
+
+    // Remove container after animation
+    setTimeout(() => {
+        container.remove();
+    }, 4000);
 }
 
 // Calculate cost per slice
