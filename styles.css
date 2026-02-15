@@ -166,6 +166,85 @@ footer {
     font-size: 14px;
 }
 
+/* Pizza Visualization Styles */
+.pizza-visualization-section {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.pizza-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding: 10px;
+}
+
+.pizza-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.pizza-svg {
+    width: 150px;
+    height: 150px;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.pizza-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+}
+
+.pizza-slice {
+    stroke: #8B4513;
+    stroke-width: 2;
+    transition: transform 0.2s ease;
+    transform-origin: center;
+}
+
+.pizza-slice:hover {
+    filter: brightness(1.1);
+}
+
+.pizza-crust {
+    fill: #D2691E;
+    stroke: #8B4513;
+    stroke-width: 3;
+}
+
+.pizza-center {
+    fill: #F4A460;
+}
+
+.slice-cheese {
+    fill: #FFD700;
+}
+
+.slice-pepperoni {
+    fill: #DC143C;
+}
+
+.slice-empty {
+    fill: #F5DEB3;
+    opacity: 0.5;
+}
+
+.no-pizzas-message {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+    width: 100%;
+}
+
 @media (max-width: 768px) {
     .stats-container {
         grid-template-columns: 1fr;
@@ -173,5 +252,14 @@ footer {
 
     th, td {
         padding: 8px 10px;
+    }
+
+    .pizza-svg {
+        width: 120px;
+        height: 120px;
+    }
+
+    .pizza-grid {
+        gap: 15px;
     }
 }
