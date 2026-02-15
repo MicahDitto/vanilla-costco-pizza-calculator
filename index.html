@@ -14,33 +14,42 @@
     </header>
 
     <main>
-        <section class="form-section">
-            <h2>Add Your Order</h2>
-            <form id="orderForm">
-                <div class="form-group">
-                    <label for="name">Your Name:</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
+        <div class="top-row">
+            <section class="form-section">
+                <h2>Add Your Order</h2>
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label for="name">Your Name:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="cheese_slices">Cheese Slices:</label>
-                    <input type="number" id="cheese_slices" name="cheese_slices" min="0" value="0">
-                </div>
+                    <div class="form-group">
+                        <label for="cheese_slices">Cheese Slices:</label>
+                        <input type="number" id="cheese_slices" name="cheese_slices" min="0" value="0">
+                    </div>
 
-                <div class="form-group">
-                    <label for="pepperoni_slices">Pepperoni Slices:</label>
-                    <input type="number" id="pepperoni_slices" name="pepperoni_slices" min="0" value="0">
-                </div>
+                    <div class="form-group">
+                        <label for="pepperoni_slices">Pepperoni Slices:</label>
+                        <input type="number" id="pepperoni_slices" name="pepperoni_slices" min="0" value="0">
+                    </div>
 
-                <div class="form-group">
-                    <label for="paid">Have you paid?</label>
-                    <input type="checkbox" id="paid" name="paid">
-                </div>
+                    <div class="form-group">
+                        <label for="paid">Have you paid?</label>
+                        <input type="checkbox" id="paid" name="paid">
+                    </div>
 
-                <button type="submit" id="submitOrder">Add My Order</button>
-                <button type="button" id="cancelEdit" style="display: none;" onclick="cancelEdit()">Cancel</button>
-            </form>
-        </section>
+                    <button type="submit" id="submitOrder">Add My Order</button>
+                    <button type="button" id="cancelEdit" style="display: none;" onclick="cancelEdit()">Cancel</button>
+                </form>
+            </section>
+
+            <section class="pizza-visualization-section">
+                <h2>Pizza Order Visualization</h2>
+                <div id="pizzaVisualization" class="pizza-grid">
+                    <!-- Pizza SVGs will be dynamically added here -->
+                </div>
+            </section>
+        </div>
 
         <section class="orders-section">
             <h2>Current Orders</h2>
@@ -92,13 +101,6 @@
                     <p class="large-text">$<span id="cost_per_slice">0.00</span></p>
                     <p id="perfect-slogan" class="perfect-slogan">Perfect Pie! ✓</p>
                 </div>
-            </div>
-        </section>
-
-        <section class="pizza-visualization-section">
-            <h2>Pizza Order Visualization</h2>
-            <div id="pizzaVisualization" class="pizza-grid">
-                <!-- Pizza SVGs will be dynamically added here -->
             </div>
         </section>
 
