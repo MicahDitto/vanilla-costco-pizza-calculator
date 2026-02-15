@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const orderForm = document.getElementById('orderForm');
     orderForm.addEventListener('submit', addOrder);
 
+    // Attach cancel button event
+    const cancelBtn = document.getElementById('cancelEdit');
+    cancelBtn.addEventListener('click', cancelEdit);
+
     // Load orders from localStorage if available
     loadOrders();
 });
@@ -47,7 +51,7 @@ function addOrder(e) {
         // Reset editing state
         editingOrderId = null;
         document.getElementById('submitOrder').textContent = 'Add My Order';
-        document.getElementById('cancelEdit').style.display = 'none';
+        document.getElementById('cancelEdit').classList.remove('visible');
     } else {
         // Create a new order object
         const order = {
@@ -97,7 +101,7 @@ function editOrder(id) {
     // Set editing state
     editingOrderId = id;
     document.getElementById('submitOrder').textContent = 'Update Order';
-    document.getElementById('cancelEdit').style.display = 'inline-block';
+    document.getElementById('cancelEdit').classList.add('visible');
 
     // Scroll to form
     document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth' });
@@ -107,7 +111,7 @@ function editOrder(id) {
 function cancelEdit() {
     editingOrderId = null;
     document.getElementById('submitOrder').textContent = 'Add My Order';
-    document.getElementById('cancelEdit').style.display = 'none';
+    document.getElementById('cancelEdit').classList.remove('visible');
     document.getElementById('orderForm').reset();
 }
 

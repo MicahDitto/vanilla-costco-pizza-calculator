@@ -293,8 +293,13 @@ tr:hover {
 }
 
 #cancelEdit {
+    display: none;
     background-color: #757575;
     margin-left: 10px;
+}
+
+#cancelEdit.visible {
+    display: inline-block;
 }
 
 #cancelEdit:hover {
