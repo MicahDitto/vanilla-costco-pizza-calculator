@@ -48,14 +48,17 @@ function addOrder(e) {
                 paid: paid
             };
         }
+        // Track this as the last modified order
+        lastModifiedOrderId = editingOrderId;
         // Reset editing state
         editingOrderId = null;
         document.getElementById('submitOrder').textContent = 'Add My Order';
         document.getElementById('cancelEdit').classList.remove('visible');
     } else {
         // Create a new order object
+        const newOrderId = Date.now();
         const order = {
-            id: Date.now(), // Use timestamp as a unique ID
+            id: newOrderId,
             name: name,
             cheese_slices: cheeseSlices,
             pepperoni_slices: pepperoniSlices,
@@ -64,6 +67,8 @@ function addOrder(e) {
 
         // Add order to array
         orders.push(order);
+        // Track this as the last modified order
+        lastModifiedOrderId = newOrderId;
     }
 
     // Save to localStorage
@@ -115,6 +120,68 @@ function cancelEdit() {
     document.getElementById('orderForm').reset();
 }
 
+// Pizza champion titles (solo winner)
+const PIZZA_TITLES = [
+    'Pizza Tzar',
+    'Pizza Prodigy',
+    'The Dough-minator',
+    'The Mozzarella Mogul',
+    'Chief Pepperoni Officer (CPO)',
+    'The Grand Vizier of the Crust',
+    'Sultan of Sauce',
+    'Supreme Slice Overlord',
+    'Deep-Dish Deity',
+    'Archduke of the Oven',
+    'Pizza Polymath',
+    'Patron Saint of the Pizzeria'
+];
+
+// Tie titles
+const TIE_TITLES_2WAY = [
+    'Dynamic Dough-o',
+    'Dough Diarchy',
+    'Supreme Sultan',
+    'Deep Dish Duo'
+];
+
+const TIE_TITLES_3WAY = [
+    'The Pizza Triumvirate',
+    'The Neapolitan Trinity',
+    'Pie-fecta'
+];
+
+const TIE_TITLES_4PLUS = [
+    'Pizza Parliament',
+    'Sauce Senator',
+    'Crust Congressman',
+    'Slice Syndicate'
+];
+
+// Store assigned titles by order ID and tie count to keep them consistent
+let assignedTitles = {};
+
+// Track the last order that was added/modified (for Pie Perfecter badge)
+let lastModifiedOrderId = null;
+
+// Get or assign a random title for an order based on tie count
+function getTitleForOrder(orderId, tieCount) {
+    const key = `${orderId}_${tieCount}`;
+    if (!assignedTitles[key]) {
+        let titleArray;
+        if (tieCount === 1) {
+            titleArray = PIZZA_TITLES;
+        } else if (tieCount === 2) {
+            titleArray = TIE_TITLES_2WAY;
+        } else if (tieCount === 3) {
+            titleArray = TIE_TITLES_3WAY;
+        } else {
+            titleArray = TIE_TITLES_4PLUS;
+        }
+        assignedTitles[key] = titleArray[Math.floor(Math.random() * titleArray.length)];
+    }
+    return assignedTitles[key];
+}
+
 // Update orders table
 function updateOrdersTable() {
     const tableBody = document.getElementById('ordersTableBody');
@@ -122,14 +189,57 @@ function updateOrdersTable() {
 
     const costPerSlice = calculateCostPerSlice();
 
+    // Find the maximum slices
+    let maxSlices = 0;
+    orders.forEach(order => {
+        const totalSlices = order.cheese_slices + order.pepperoni_slices;
+        if (totalSlices > maxSlices) {
+            maxSlices = totalSlices;
+        }
+    });
+
+    // Find all orders tied for most slices
+    const topOrderIds = [];
+    if (maxSlices > 0) {
+        orders.forEach(order => {
+            const totalSlices = order.cheese_slices + order.pepperoni_slices;
+            if (totalSlices === maxSlices) {
+                topOrderIds.push(order.id);
+            }
+        });
+    }
+    const tieCount = topOrderIds.length;
+
+    // Check if the order is perfect (no leftover slices)
+    const isPerfectOrder = checkIfPerfectOrder();
+
     orders.forEach(order => {
         const row = document.createElement('tr');
 
         const totalSlices = order.cheese_slices + order.pepperoni_slices;
         const orderCost = (totalSlices * costPerSlice).toFixed(2);
+        const isTopOrder = topOrderIds.includes(order.id);
+
+        // Add highlight class if this is a top order
+        if (isTopOrder) {
+            row.classList.add('top-order-row');
+        }
+
+        // Build badges
+        let badges = '';
+        if (isTopOrder) {
+            badges += `<span class="pizza-champion-badge">${getTitleForOrder(order.id, tieCount)}</span>`;
+        }
+        // Only the person who completed the perfect order gets the Pie Perfecter badge
+        if (isPerfectOrder && order.id === lastModifiedOrderId) {
+            badges += `<span class="perfect-pie-badge">Pie Perfecter ✓</span>`;
+        }
+
+        // Create name cell with optional badges
+        const nameDisplay = `${order.name}${badges}`;
 
         row.innerHTML = `
-            <td>${order.name}</td>
+            <td>${nameDisplay}</td>
             <td>${order.cheese_slices}</td>
             <td>${order.pepperoni_slices}</td>
             <td>${totalSlices}</td>
@@ -143,6 +253,44 @@ function updateOrdersTable() {
 
         tableBody.appendChild(row);
     });
+}
+
+// Check if the current order results in no leftover slices
+function checkIfPerfectOrder() {
+    const totalCheeseSlices = orders.reduce((sum, order) => sum + order.cheese_slices, 0);
+    const totalPepperoniSlices = orders.reduce((sum, order) => sum + order.pepperoni_slices, 0);
+
+    if (totalCheeseSlices === 0 && totalPepperoniSlices === 0) return false;
+
+    // Calculate pizzas needed using the same logic as updatePizzaCalculations
+    let cheesePizzasNeeded = Math.floor(totalCheeseSlices / SLICES_PER_PIZZA);
+    let pepperoniPizzasNeeded = Math.floor(totalPepperoniSlices / SLICES_PER_PIZZA);
+
+    let remainingCheeseSlices = totalCheeseSlices - (cheesePizzasNeeded * SLICES_PER_PIZZA);
+    let remainingPepperoniSlices = totalPepperoniSlices - (pepperoniPizzasNeeded * SLICES_PER_PIZZA);
+
+    if (remainingCheeseSlices > 6) {
+        cheesePizzasNeeded += 1;
+        remainingCheeseSlices = 0;
+    }
+    if (remainingPepperoniSlices > 6) {
+        pepperoniPizzasNeeded += 1;
+        remainingPepperoniSlices = 0;
+    }
+
+    let halfPizzas = 0;
+    if (remainingCheeseSlices > 0 && remainingPepperoniSlices > 0) {
+        halfPizzas = 1;
+    } else {
+        if (remainingCheeseSlices > 0) cheesePizzasNeeded += 1;
+        if (remainingPepperoniSlices > 0) pepperoniPizzasNeeded += 1;
+    }
+
+    const totalCheeseCapacity = (cheesePizzasNeeded * SLICES_PER_PIZZA) + (halfPizzas * 6);
+    const totalPepperoniCapacity = (pepperoniPizzasNeeded * SLICES_PER_PIZZA) + (halfPizzas * 6);
+    const totalLeftover = (totalCheeseCapacity - totalCheeseSlices) + (totalPepperoniCapacity - totalPepperoniSlices);
+
+    return totalLeftover === 0;
 }
 
 // Update pizza calculations
@@ -283,6 +431,75 @@ function triggerConfetti() {
     // Get the cost per slice element position for confetti origin
     const costBox = document.querySelector('.stat-box.highlight');
     const rect = costBox.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+
+    // Create confetti pieces
+    const colors = ['#ff5722', '#ffeb3b', '#4caf50', '#2196f3', '#9c27b0', '#ff9800', '#e91e63', '#00bcd4'];
+    const shapes = ['square', 'circle', 'triangle'];
+
+    for (let i = 0; i < 80; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti burst';
+
+        // Random properties
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        const size = Math.random() * 12 + 6;
+
+        // Random angle for burst direction (full 360 degrees)
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 200 + 100;
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity - 150; // Bias upward
+
+        const delay = Math.random() * 0.3;
+
+        let borderRadius = '0';
+        let clipPath = 'none';
+        if (shape === 'circle') {
+            borderRadius = '50%';
+        } else if (shape === 'triangle') {
+            clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+        }
+
+        confetti.style.cssText = `
+            left: ${originX}px;
+            top: ${originY}px;
+            width: ${size}px;
+            height: ${size}px;
+            background-color: ${color};
+            border-radius: ${borderRadius};
+            clip-path: ${clipPath};
+            --tx: ${tx}px;
+            --ty: ${ty}px;
+            animation-delay: ${delay}s;
+        `;
+
+        container.appendChild(confetti);
+    }
+
+    // Remove container after animation
+    setTimeout(() => {
+        container.remove();
+    }, 4000);
+}
+
+// Trigger confetti from a specific element
+function triggerConfettiFromElement(element) {
+    // Remove any existing confetti container
+    const existingContainer = document.querySelector('.confetti-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+
+    // Create confetti container
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+
+    // Get element position for confetti origin
+    const rect = element.getBoundingClientRect();
     const originX = rect.left + rect.width / 2;
     const originY = rect.top + rect.height / 2;
 
@@ -603,6 +820,22 @@ function updatePizzaVisualization() {
 
             container.appendChild(pizzaContainer);
         }
+    }
+
+    // Calculate total leftover slices for "Perfect Pies!" message
+    const totalCheeseCapacity = (cheesePizzasNeeded * SLICES_PER_PIZZA) + (halfPizzas * 6);
+    const totalPepperoniCapacity = (pepperoniPizzasNeeded * SLICES_PER_PIZZA) + (halfPizzas * 6);
+    const totalLeftover = (totalCheeseCapacity - totalCheeseSlices) + (totalPepperoniCapacity - totalPepperoniSlices);
+
+    // Add "Perfect Pies!" message if no leftover slices
+    if (totalLeftover === 0 && (totalCheeseSlices > 0 || totalPepperoniSlices > 0)) {
+        const perfectMessage = document.createElement('div');
+        perfectMessage.className = 'perfect-pies-message';
+        perfectMessage.innerHTML = 'Perfect Pies! ✓';
+        container.appendChild(perfectMessage);
+
+        // Trigger confetti from pizza visualization
+        triggerConfettiFromElement(container);
     }
 }
 

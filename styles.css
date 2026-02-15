@@ -253,6 +253,76 @@ tr:hover {
     background-color: #f5f5f5;
 }
 
+/* Cheese column - faded yellow */
+#ordersTable td:nth-child(2),
+#ordersTable th:nth-child(2) {
+    background-color: rgba(255, 215, 0, 0.2);
+}
+
+/* Pepperoni column - faded red */
+#ordersTable td:nth-child(3),
+#ordersTable th:nth-child(3) {
+    background-color: rgba(220, 20, 60, 0.15);
+}
+
+/* Top order highlight - chromatic gradient */
+.top-order-row {
+    background: linear-gradient(90deg, rgba(255, 107, 53, 0.25) 0%, rgba(247, 147, 30, 0.25) 25%, rgba(233, 30, 99, 0.25) 50%, rgba(156, 39, 176, 0.25) 75%, rgba(123, 31, 162, 0.25) 100%);
+    animation: champion-glow 2s ease-in-out infinite;
+}
+
+@keyframes champion-glow {
+    0%, 100% {
+        box-shadow: inset 0 0 10px rgba(233, 30, 99, 0.2);
+    }
+    50% {
+        box-shadow: inset 0 0 20px rgba(156, 39, 176, 0.3);
+    }
+}
+
+.pizza-champion-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 25%, #e91e63 50%, #9c27b0 75%, #7b1fa2 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: badge-pop 0.5s ease-out;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes badge-pop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.perfect-pie-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: badge-pop 0.5s ease-out;
+    white-space: nowrap;
+}
+
 .paid-status {
     font-weight: bold;
 }
@@ -390,6 +460,33 @@ footer {
     font-style: italic;
     padding: 20px;
     width: 100%;
+}
+
+.perfect-pies-message {
+    width: 100%;
+    text-align: center;
+    color: #1b5e20;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 20px;
+    margin-top: 10px;
+    background-color: #c8e6c9;
+    border-radius: 8px;
+    animation: perfect-pies-pop 0.6s ease-out;
+}
+
+@keyframes perfect-pies-pop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 @media (max-width: 768px) {
